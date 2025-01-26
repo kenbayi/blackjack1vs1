@@ -24,3 +24,23 @@ func GetUserByUsername(db *sql.DB, username string) (*User, error) {
 	}
 	return &user, nil
 }
+
+func CheckUsernameExists(db *sql.DB, username string) (bool, error) {
+	query := `SELECT COUNT(1) FROM users WHERE username = $1`
+	var count int
+	err := db.QueryRow(query, username).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func InsertUser(db *sql.DB, username string, hashedPassword string) (int, error) {
+	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
+	var userID int
+	err := db.QueryRow(query, username, hashedPassword).Scan(&userID)
+	if err != nil {
+		return 0, err
+	}
+	return userID, nil
+}

@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -11,6 +13,7 @@ type User struct {
 	Username  string    `json:"username"`   // Username
 	Password  string    `json:"-"`          // Hashed password (not exposed in JSON)
 	CreatedAt time.Time `json:"created_at"` // Account creation timestamp
+	Bet       int       `json:"bet"`
 }
 
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {
@@ -43,4 +46,19 @@ func InsertUser(db *sql.DB, username string, hashedPassword string) (int, error)
 		return 0, err
 	}
 	return userID, nil
+}
+
+func GetPlayerBalance(db *sql.DB, playerID string) (int, error) {
+	// Convert playerID (string) to an int
+	id, err := strconv.Atoi(playerID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid playerID: %v", err)
+	}
+	query := `SELECT balance FROM users WHERE id = $1`
+	var balance int
+	err = db.QueryRow(query, id).Scan(&balance)
+	if err != nil {
+		return 0, err
+	}
+	return balance, nil
 }

@@ -6,20 +6,18 @@ import (
 	"blackjack/src/handlers"
 	"blackjack/src/middlewares"
 	"context"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 func main() {
 	// Load configuration
 	cfg := config.LoadConfig()
-
 	// Initialize PostgreSQL
 	db.InitPostgres(cfg.PostgresDSN)
 
@@ -38,6 +36,9 @@ func main() {
 	protected.Use(middlewares.ValidateSession)
 	protected.HandleFunc("/logout", handlers.LogoutHandler).Methods("POST")
 
+	// WebSocket route for handling game actions like room creation, joining, etc.
+	protected.HandleFunc("/ws", handlers.HandleWebSocket)
+
 	// HTTP server setup
 	server := &http.Server{
 		Addr:         ":3000",
@@ -46,27 +47,27 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	// Running the server in a goroutine
+	// Start HTTP server in a goroutine
 	go func() {
-		log.Println("Server is running on http://localhost:3000")
+		log.Println("HTTP Server is running on http://localhost:3000")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			log.Fatalf("HTTP Server failed to start: %v", err)
 		}
 	}()
 
-	// Graceful shutdown handling
+	// Graceful shutdown handling for the HTTP server
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
 
 	log.Println("Shutting down server...")
 
-	// Graceful shutdown with timeout
+	// Graceful shutdown with timeout for HTTP server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %v", err)
+		log.Fatalf("HTTP Server shutdown failed: %v", err)
 	}
 
 	log.Println("Bye.")

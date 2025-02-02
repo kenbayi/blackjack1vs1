@@ -8,9 +8,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var RedisClient *redis.Client
+var (
+	RedisClient *redis.Client
+	Ctx         context.Context // Global context for Redis operations
+)
 
 func InitRedis(addr, password string) {
+	// Initialize global context
+	Ctx = context.Background()
+
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
@@ -18,7 +24,7 @@ func InitRedis(addr, password string) {
 	})
 
 	// Test Redis connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(Ctx, 5*time.Second) // Use a timeout for testing connection
 	defer cancel()
 
 	if err := RedisClient.Ping(ctx).Err(); err != nil {

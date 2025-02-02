@@ -14,6 +14,7 @@ type Message struct {
 
 type Room struct {
 	ID      string
+	Deck    []string
 	Players map[*websocket.Conn]string // Connections mapped to player IDs
 }
 
@@ -67,6 +68,8 @@ func (h *Hub) handleMessage(msg Message) {
 		h.handleReady(msg)
 	case "leave_room":
 		h.leaveRoom(msg)
+	case "hit":
+		h.hitCard(msg)
 	default:
 		log.Printf("Unknown message type: %s", msg.Type)
 	}

@@ -27,10 +27,7 @@ func (h *Hub) handleReady(msg Message) {
 			return
 		}
 
-		// Broadcast game start message
-		h.broadcastRoom(roomID, map[string]interface{}{
-			"type": "game_start",
-		})
+		go h.startGame(roomID)
 
 		// Remove room from list of players as soon as game started
 		h.broadcastAll(map[string]interface{}{
@@ -38,7 +35,13 @@ func (h *Hub) handleReady(msg Message) {
 			"action": "remove",
 			"roomID": roomID,
 		})
+	} else {
+		h.broadcastRoom(roomID, map[string]interface{}{
+			"type":        "player_ready",
+			"playerReady": playerID,
+		})
 	}
+
 }
 
 func allReady(roomID string) bool {

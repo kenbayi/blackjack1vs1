@@ -33,10 +33,9 @@ func (h *Hub) createRoom(msg Message) {
 		"bet":                     bet,
 		"players":                 playerID, // single player ID for now
 		"readyStatus." + playerID: false,    // default ready status for the creator
-		"hands." + playerID:       nil,      // empty hand for the creator
 		"lastAction." + playerID:  nil,      // no action yet
 		"scores." + playerID:      0,        // initial score for the creator
-		"deck":                    nil,
+		"turn":                    nil,
 	}
 
 	// Save the room state directly in the Redis hash
@@ -50,6 +49,7 @@ func (h *Hub) createRoom(msg Message) {
 	room := &Room{
 		ID:      roomID,
 		Players: map[*websocket.Conn]string{msg.Conn: playerID},
+		Deck:    generateShuffledDeck(),
 	}
 
 	h.mu.Lock()

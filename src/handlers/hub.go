@@ -70,6 +70,8 @@ func (h *Hub) handleMessage(msg Message) {
 		h.leaveRoom(msg)
 	case "hit":
 		h.hitCard(msg)
+	case "stand":
+		h.standCard(msg)
 	default:
 		log.Printf("Unknown message type: %s", msg.Type)
 	}

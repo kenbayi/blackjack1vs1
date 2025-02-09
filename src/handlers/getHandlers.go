@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"blackjack/src/db"
+	"blackjack/src/models"
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -27,4 +31,39 @@ func (h *Hub) GetRooms(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rooms)
+}
+
+// GET /history/{id} → Returns game history
+func GetHistory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"] //extract 'id' from the URL
+
+	if userID == "" {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	historyChannel := make(chan *models.GameRoom)
+	errChannel := make(chan error)
+
+	go func() {
+		historyData, err := models.GetHistory(db.PostgresDB, userID)
+		if err != nil {
+			errChannel <- err
+			return
+		}
+		if historyData == nil {
+			errChannel <- fmt.Errorf("History not found")
+			return
+		}
+		historyChannel <- historyData
+	}()
+
+	select {
+	case history := <-historyChannel:
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(history)
+	case err := <-errChannel:
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
 }

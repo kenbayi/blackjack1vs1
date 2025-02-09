@@ -37,6 +37,8 @@ func main() {
 	protected.HandleFunc("/logout", handlers.LogoutHandler).Methods("POST")
 	// Protected GET endpoints
 	protected.HandleFunc("/rooms", handlers.HubInstance.GetRooms).Methods("GET")
+	protected.HandleFunc("/history/{id}", handlers.GetHistory).Methods("GET")
+	protected.HandleFunc("/updProfile", handlers.UpdateUserProfile).Methods("PUT")
 	protected.HandleFunc("/user/{id}", handlers.DeleteUserHandler).Methods("DELETE")
 
 	// WebSocket route for handling game actions like room creation, joining, etc.

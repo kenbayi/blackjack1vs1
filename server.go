@@ -38,7 +38,11 @@ func main() {
 	// Protected GET endpoints
 	protected.HandleFunc("/rooms", handlers.HubInstance.GetRooms).Methods("GET")
 	protected.HandleFunc("/history/{id}", handlers.GetHistory).Methods("GET")
+	protected.HandleFunc("/user/{username}", handlers.GetUserByID).Methods("GET") // I think ID is not always an integer!!! (zhsln)
+	// Protected PUT endpoints
 	protected.HandleFunc("/updProfile", handlers.UpdateUserProfile).Methods("PUT")
+	protected.HandleFunc("/updBalance", handlers.UpdateUserBalance).Methods("PUT")
+	// And protected DELETE endpoint...
 	protected.HandleFunc("/user/{id}", handlers.DeleteUserHandler).Methods("DELETE")
 
 	// WebSocket route for handling game actions like room creation, joining, etc.

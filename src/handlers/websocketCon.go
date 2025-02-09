@@ -1,18 +1,16 @@
 package handlers
 
 import (
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/websocket"
 )
 
-// Hub instance
-var hub = NewHub()
+// Global Hub instance
+var HubInstance = NewHub()
 
 func init() {
-	// Start the hub in a goroutine
-	go hub.Run()
+	go HubInstance.Run() // Start the hub
 }
 
 var upgrader = websocket.Upgrader{
@@ -28,6 +26,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "WebSocket upgrade failed", http.StatusInternalServerError)
 		return
 	}
+
 	playerID, ok := r.Context().Value("user_id").(string)
 	if !ok {
 		log.Println("PlayerID not found in context")
@@ -35,15 +34,15 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		conn.Close()
 		return
 	}
+
 	// Register the connection with the hub
-	hub.Register <- conn
+	HubInstance.Register <- conn
 
 	defer func() {
-		hub.Unregister <- conn
+		HubInstance.Unregister <- conn
 		conn.Close()
 	}()
 
-	// Listen for messages
 	for {
 		var msg map[string]interface{}
 		err := conn.ReadJSON(&msg)
@@ -55,14 +54,12 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		if content, ok := msg["content"].(map[string]interface{}); ok {
 			content["playerID"] = playerID
 		} else {
-			// If content does not exist, create it and add playerID
 			msg["content"] = map[string]interface{}{
 				"playerID": playerID,
 			}
 		}
 
-		// Send the message to the hub
-		hub.Messages <- Message{
+		HubInstance.Messages <- Message{
 			Type:    msg["type"].(string),
 			Content: msg["content"],
 			Conn:    conn,

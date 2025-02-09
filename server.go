@@ -35,6 +35,9 @@ func main() {
 	protected := router.PathPrefix("/").Subrouter()
 	protected.Use(middlewares.ValidateSession)
 	protected.HandleFunc("/logout", handlers.LogoutHandler).Methods("POST")
+	// Protected GET endpoints
+	protected.HandleFunc("/rooms", handlers.HubInstance.GetRooms).Methods("GET")
+	protected.HandleFunc("/user/{id}", handlers.DeleteUserHandler).Methods("DELETE")
 
 	// WebSocket route for handling game actions like room creation, joining, etc.
 	protected.HandleFunc("/ws", handlers.HandleWebSocket)

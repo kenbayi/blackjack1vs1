@@ -14,13 +14,13 @@ type User struct {
 	Username  string    `json:"username"`   // Username
 	Password  string    `json:"-"`          // Hashed password (not exposed in JSON)
 	CreatedAt time.Time `json:"created_at"` // Account creation timestamp
-	Balance   int       `json:"bet"`
+	Balance   int       `json:"balance"`
 }
 
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {
-	query := `SELECT id, username, password, created_at FROM users WHERE username = $1`
+	query := `SELECT id, username, password, created_at, balance FROM users WHERE username = $1`
 	var user User
-	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.CreatedAt)
+	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.CreatedAt, &user.Balance)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil // User not found
 	} else if err != nil {
@@ -81,6 +81,36 @@ func UpdatePlayerBalances(db *sql.DB, ctx context.Context, bet string, winnerID,
 		return fmt.Errorf("error updating winner balance: %v", err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
+}
+
+func DeleteUser(db *sql.DB, userID int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	// First, delete any related game sessions or references (if needed)
+	_, err = tx.ExecContext(ctx, `DELETE FROM game_rooms WHERE player1_id = $1 OR player2_id = $1`, userID)
+	if err != nil {
+		return fmt.Errorf("error deleting user game sessions: %v", err)
+	}
+
+	// Then, delete the user
+	_, err = tx.ExecContext(ctx, `DELETE FROM users WHERE id = $1`, userID)
+	if err != nil {
+		return fmt.Errorf("error deleting user account: %v", err)
+	}
+
+	// Commit transaction
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("error committing transaction: %v", err)
 	}

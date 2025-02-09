@@ -67,3 +67,38 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 }
+
+// GET /user/{username} → Returns user details by username
+func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username := vars["username"] // Extracts 'username' from the URL
+
+	if username == "" {
+		http.Error(w, "Username is required", http.StatusBadRequest)
+		return
+	}
+
+	userChannel := make(chan *models.User)
+	errChannel := make(chan error)
+
+	go func() {
+		user, err := models.GetUserByUsername(db.PostgresDB, username)
+		if err != nil {
+			errChannel <- err
+			return
+		}
+		if user == nil {
+			errChannel <- fmt.Errorf("User not found")
+			return
+		}
+		userChannel <- user
+	}()
+
+	select {
+	case user := <-userChannel:
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	case err := <-errChannel:
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+}

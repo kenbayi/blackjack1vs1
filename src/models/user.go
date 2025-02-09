@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 )
@@ -83,6 +84,32 @@ func UpdatePlayerBalances(db *sql.DB, ctx context.Context, bet string, winnerID,
 
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
+}
+
+// UpdateUserBalance updates the user's balance in a transaction-safe manner
+func UpdateUserBalance(db *sql.DB, userID int, amount int) error {
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("Error starting transaction:", err)
+		return err
+	}
+	defer tx.Rollback()
+
+	// Update balance
+	_, err = tx.ExecContext(ctx, `UPDATE users SET balance = balance + $1 WHERE id = $2`, amount, userID)
+	if err != nil {
+		log.Println("Error updating user balance:", err)
+		return err
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		log.Println("Error committing transaction:", err)
+		return err
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -61,4 +62,28 @@ func GetPlayerBalance(db *sql.DB, playerID string) (int, error) {
 		return 0, err
 	}
 	return balance, nil
+}
+
+func UpdatePlayerBalances(db *sql.DB, ctx context.Context, bet string, winnerID, loserID string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, `UPDATE users SET balance = balance - $1 WHERE id = $2`, bet, loserID)
+	if err != nil {
+		return fmt.Errorf("error updating loser balance: %v", err)
+	}
+
+	_, err = tx.ExecContext(ctx, `UPDATE users SET balance = balance + $1 WHERE id = $2`, bet, winnerID)
+	if err != nil {
+		return fmt.Errorf("error updating winner balance: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
 }

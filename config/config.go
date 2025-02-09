@@ -19,7 +19,7 @@ func LoadConfig() Config {
 	}
 
 	return Config{
-		PostgresDSN: getEnv("POSTGRES_DSN", "postgres://postgres:1234@localhost:5432/blackjack?sslmode=disable"),
+		PostgresDSN: getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/blackjack?sslmode=disable"),
 		RedisAddr:   getEnv("REDIS_ADDR", "localhost:6379"),
 		RedisPass:   getEnv("REDIS_PASS", ""),
 	}

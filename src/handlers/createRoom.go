@@ -3,9 +3,10 @@ package handlers
 import (
 	"blackjack/src/db"
 	"blackjack/src/models"
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"log"
 )
 
 func (h *Hub) createRoom(msg Message) {

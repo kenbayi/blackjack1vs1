@@ -106,6 +106,12 @@ func (h *Hub) joinRoom(msg Message) {
 		}(),
 	})
 
+	// Notify players to press "Ready" for the next round
+	h.broadcastRoom(roomID, map[string]interface{}{
+		"type": "game_waiting",
+		"msg":  "Both players need to press 'Ready' to start the next round.",
+	})
+
 	// Notify about the updated room state
 	h.broadcastAll(map[string]interface{}{
 		"type":   "update_list",

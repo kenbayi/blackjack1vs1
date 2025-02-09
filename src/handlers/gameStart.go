@@ -3,6 +3,7 @@ package handlers
 import (
 	"blackjack/src/db"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -40,13 +41,64 @@ func (h *Hub) startGame(roomID string) {
 		return
 	}
 
-	// Broadcast game start message with initial hands
+	// Get updated scores
+	hand1 := db.RedisClient.LRange(db.Ctx, "room:"+roomID+":hand:"+p1, 0, -1).Val()
+	hand2 := db.RedisClient.LRange(db.Ctx, "room:"+roomID+":hand:"+p2, 0, -1).Val()
+	score1 := calculateScore(hand1)
+	score2 := calculateScore(hand2)
+
+	err1 := db.RedisClient.HSet(db.Ctx, "room:"+roomID, "scores."+p1, score1).Err()
+	if err1 != nil {
+		log.Printf("Error setting scores for player %s in room %s: %v", p1, roomID, err1)
+		return
+	}
+	err2 := db.RedisClient.HSet(db.Ctx, "room:"+roomID, "scores."+p2, score2).Err()
+	if err2 != nil {
+		log.Printf("Error setting scores for player %s in room %s: %v", p2, roomID, err2)
+		return
+	}
+
+	// Broadcast game start message with initial hands and scores
 	h.broadcastRoom(roomID, map[string]interface{}{
 		"type": "game_start",
 		"hands": map[string][]string{
 			p1: {card1, card2},
 			p2: {card3, card4},
 		},
+		"scores": map[string]int{
+			p1: score1,
+			p2: score2,
+		},
 		"turn": players[0],
 	})
+}
+
+func calculateScore(hand []string) int {
+	score := 0
+	aces := 0
+
+	for _, card := range hand {
+		value := card[:len(card)-1] // Extract card value (without suit)
+
+		switch value {
+		case "A":
+			aces++
+			score += 11 // Initially count ace as 11
+		case "K", "Q", "J":
+			score += 10
+		default:
+			num, err := strconv.Atoi(value)
+			if err == nil {
+				score += num
+			}
+		}
+	}
+
+	// Convert Aces from 11 to 1 if needed to avoid bust
+	for score > 21 && aces > 0 {
+		score -= 10
+		aces--
+	}
+
+	return score
 }

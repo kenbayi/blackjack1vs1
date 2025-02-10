@@ -69,7 +69,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /user/{username} → Returns user details by username
-func GetUserByID(w http.ResponseWriter, r *http.Request) {
+func GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"] // Extracts 'username' from the URL
 

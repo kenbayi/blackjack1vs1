@@ -38,7 +38,7 @@ func main() {
 	// Protected GET endpoints
 	protected.HandleFunc("/rooms", handlers.HubInstance.GetRooms).Methods("GET")
 	protected.HandleFunc("/history/{id}", handlers.GetHistory).Methods("GET")
-	protected.HandleFunc("/user/{username}", handlers.GetUserByID).Methods("GET") // I think ID is not always an integer!!! (zhsln)
+	protected.HandleFunc("/user/{username}", handlers.GetUserByUsername).Methods("GET")
 	// Protected PUT endpoints
 	protected.HandleFunc("/updProfile", handlers.UpdateUserProfile).Methods("PUT")
 	protected.HandleFunc("/updBalance", handlers.UpdateUserBalance).Methods("PUT")

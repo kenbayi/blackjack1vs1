@@ -115,6 +115,32 @@ func UpdateUserBalance(db *sql.DB, userID int, amount int) error {
 	return nil
 }
 
+// UpdateUsername updates a user's username in a transaction-safe manner
+func UpdateUsername(db *sql.DB, userID int, newUsername string) error {
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("Error starting transaction:", err)
+		return err
+	}
+	defer tx.Rollback()
+
+	// Update username
+	_, err = tx.ExecContext(ctx, `UPDATE users SET username = $1 WHERE id = $2`, newUsername, userID)
+	if err != nil {
+		log.Println("Error updating user profile:", err)
+		return err
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		log.Println("Error committing transaction:", err)
+		return err
+	}
+
+	return nil
+}
+
 func DeleteUser(db *sql.DB, userID int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

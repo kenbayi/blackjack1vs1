@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func (h *Hub) endGame(roomID string, winnerID string) {
+func (h *Hub) endGame(msg Message, roomID string, winnerID string) {
 	h.mu.Lock()
-	_, exists := h.Rooms[roomID]
+	room, exists := h.Rooms[roomID]
 	h.mu.Unlock()
 
 	if !exists {
@@ -48,48 +48,108 @@ func (h *Hub) endGame(roomID string, winnerID string) {
 		loserID = p1
 	}
 
-	err := models.UpdatePlayerBalances(db.PostgresDB, ctx, bet, winnerID, loserID)
-	if err != nil {
-		log.Println("Failed to update balances:", err)
-		return
+	if winnerID != "" {
+		err := models.UpdatePlayerBalances(db.PostgresDB, ctx, bet, winnerID, loserID)
+		if err != nil {
+			log.Println("Failed to update balances:", err)
+			return
+		}
+
+		// Validate if the player has enough money
+		playerMoney, err := models.GetPlayerBalance(db.PostgresDB, p1)
+		betInt, err1 := strconv.Atoi(bet)
+		if err1 != nil {
+			log.Printf("Error converting bet to int")
+			return
+		}
+		if err != nil || playerMoney < betInt {
+			removePlayer(playersRes.Val(), p1, roomID)
+			h.mu.Lock()
+			delete(room.Players, msg.Conn)
+			h.mu.Unlock()
+			// Notify all clients about the updated room state
+			h.broadcastRoom(roomID, map[string]interface{}{
+				"type": "room_left",
+				"players": func() []string {
+					players := []string{}
+					for _, id := range room.Players {
+						players = append(players, id)
+					}
+					return players
+				}(),
+			})
+
+			// Notify all clients about the updated player list
+			h.broadcastAll(map[string]interface{}{
+				"type":   "update_list",
+				"action": "leave",
+				"roomID": roomID,
+				"players": func() []string {
+					players := []string{}
+					for _, id := range room.Players {
+						players = append(players, id)
+					}
+					return players
+				}(),
+			})
+
+		}
+		playerMoney2, err := models.GetPlayerBalance(db.PostgresDB, p2)
+		betInt, err2 := strconv.Atoi(bet)
+		if err2 != nil {
+			log.Printf("Error converting bet to int")
+			return
+		}
+		if err != nil || playerMoney2 < betInt {
+			removePlayer(playersRes.Val(), p2, roomID)
+			h.mu.Lock()
+			delete(room.Players, msg.Conn)
+			h.mu.Unlock()
+			// Notify all clients about the updated room state
+			h.broadcastRoom(roomID, map[string]interface{}{
+				"type": "room_left",
+				"players": func() []string {
+					players := []string{}
+					for _, id := range room.Players {
+						players = append(players, id)
+					}
+					return players
+				}(),
+			})
+
+			// Notify all clients about the updated player list
+			h.broadcastAll(map[string]interface{}{
+				"type":   "update_list",
+				"action": "leave",
+				"roomID": roomID,
+				"players": func() []string {
+					players := []string{}
+					for _, id := range room.Players {
+						players = append(players, id)
+					}
+					return players
+				}(),
+			})
+		}
+
+	} else {
+		winnerID = "0"
 	}
 
-	err = models.InsertGameRoom(db.PostgresDB, ctx, roomID, p1, p2, winnerID)
+	err := models.InsertGameRoom(db.PostgresDB, ctx, roomID, p1, p2, winnerID)
 	if err != nil {
 		log.Println("Failed to insert game room record:", err)
 	}
 
 	// Reset game state in Redis
 	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "status", "waiting")
-	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "ready."+p1, "true")
-	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "ready."+p2, "true")
+	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "readyStatus."+p1, "0")
+	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "readyStatus."+p2, "0")
 	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "turn", "")
 	db.RedisClient.Del(db.Ctx, "room:"+roomID+":hand:"+p1)
 	db.RedisClient.Del(db.Ctx, "room:"+roomID+":hand:"+p2)
 	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "score."+p1, "0")
 	db.RedisClient.HSet(db.Ctx, "room:"+roomID, "score."+p2, "0")
-
-	// Validate if the player has enough money
-	playerMoney, err := models.GetPlayerBalance(db.PostgresDB, p1)
-	betInt, err1 := strconv.Atoi(bet)
-	if err1 != nil {
-		log.Printf("Error converting bet to int")
-		return
-	}
-	if err != nil || playerMoney < betInt {
-		removePlayer(playersRes.Val(), p1, roomID)
-		return
-	}
-	playerMoney2, err := models.GetPlayerBalance(db.PostgresDB, p2)
-	betInt, err2 := strconv.Atoi(bet)
-	if err2 != nil {
-		log.Printf("Error converting bet to int")
-		return
-	}
-	if err != nil || playerMoney2 < betInt {
-		removePlayer(playersRes.Val(), p2, roomID)
-		return
-	}
 
 	// Broadcast game result
 	h.broadcastRoom(roomID, map[string]interface{}{

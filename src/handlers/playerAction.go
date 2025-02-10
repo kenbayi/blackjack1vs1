@@ -84,7 +84,7 @@ func (h *Hub) hitCard(msg Message) {
 		})
 
 		// Call game end, declaring opponent as the winner
-		h.endGame(roomID, opponentID)
+		h.endGame(msg, roomID, opponentID)
 		return
 	}
 
@@ -189,6 +189,6 @@ func (h *Hub) standCard(msg Message) {
 		} else {
 			winner = "" // Tie
 		}
-		h.endGame(roomID, winner)
+		h.endGame(msg, roomID, winner)
 	}
 }

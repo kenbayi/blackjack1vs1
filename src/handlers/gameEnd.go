@@ -37,7 +37,7 @@ func (h *Hub) endGame(roomID string, winnerID string) {
 
 	// Get the bet amount from Redis
 	bet := db.RedisClient.HGet(db.Ctx, "room:"+roomID, "bet").Val()
-	if bet != "" {
+	if bet == "" {
 		log.Println("Error: Bet amount not found in Redis")
 		return
 	}

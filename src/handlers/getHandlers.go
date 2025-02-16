@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
+	"strings"
 )
 
 // GetRooms retrieves active game rooms from in-memory storage
@@ -16,16 +18,37 @@ func (h *Hub) GetRooms(w http.ResponseWriter, r *http.Request) {
 
 	var rooms []map[string]interface{}
 
-	for roomID, room := range h.Rooms {
-		rooms = append(rooms, map[string]interface{}{
-			"room_id": roomID,
-			"players": len(room.Players),
-		})
+	// Fetch all room keys from Redis
+	roomKeys, err := db.RedisClient.Keys(db.Ctx, "room:*").Result()
+	if err != nil {
+		log.Println("Error fetching room keys from Redis:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	// If no rooms are available, return a 404 response
+	for _, roomKey := range roomKeys {
+		// Get all room details
+		roomData, err := db.RedisClient.HGetAll(db.Ctx, roomKey).Result()
+		if err != nil {
+			log.Println("Error fetching room data from Redis for", roomKey, ":", err)
+			continue
+		}
+
+		// Only add rooms that are "waiting"
+		if roomData["status"] == "waiting" && !strings.Contains(roomData["players"], ",") {
+			rooms = append(rooms, map[string]interface{}{
+				"roomID":  roomData["roomID"],
+				"players": []string{roomData["players"]}, // Ensure it's always an array
+				"bet":     roomData["bet"],
+			})
+		}
+	}
+
+	// If no rooms are available, return an empty list
 	if len(rooms) == 0 {
-		http.Error(w, `{"error": "No active rooms found"}`, http.StatusNotFound)
+		log.Println("⚠️ No active rooms, returning empty list.")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode([]map[string]interface{}{})
 		return
 	}
 

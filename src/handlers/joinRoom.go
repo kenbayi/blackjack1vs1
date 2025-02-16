@@ -96,7 +96,8 @@ func (h *Hub) joinRoom(msg Message) {
 	h.mu.Unlock()
 
 	h.broadcastRoom(roomID, map[string]interface{}{
-		"type": "room_joined",
+		"type":   "room_joined",
+		"roomID": roomID,
 		"players": func() []string {
 			players := []string{}
 			for _, id := range room.Players {
@@ -113,7 +114,7 @@ func (h *Hub) joinRoom(msg Message) {
 	})
 
 	// Notify about the updated room state
-	h.broadcastAll(map[string]interface{}{
+	h.broadcastRoom(roomID, map[string]interface{}{
 		"type":   "update_list",
 		"action": "join",
 		"roomID": roomID,

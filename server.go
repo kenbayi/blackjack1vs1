@@ -7,6 +7,7 @@ import (
 	"blackjack/src/middlewares"
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors" // 🚀 Import CORS package
 	"log"
 	"net/http"
 	"os"
@@ -16,16 +17,19 @@ import (
 )
 
 func main() {
-	// Load configuration
 	cfg := config.LoadConfig()
-	// Initialize PostgreSQL
 	db.InitPostgres(cfg.PostgresDSN)
-
-	// Initialize Redis
 	db.InitRedis(cfg.RedisAddr, cfg.RedisPass)
 
-	// Setup HTTP router
 	router := mux.NewRouter()
+
+	// Enable CORS middleware
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // Change to your frontend URL
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
 
 	// Public routes
 	router.HandleFunc("/register", handlers.RegisterHandler).Methods("POST")
@@ -35,28 +39,23 @@ func main() {
 	protected := router.PathPrefix("/").Subrouter()
 	protected.Use(middlewares.ValidateSession)
 	protected.HandleFunc("/logout", handlers.LogoutHandler).Methods("POST")
-	// Protected GET endpoints
 	protected.HandleFunc("/rooms", handlers.HubInstance.GetRooms).Methods("GET")
 	protected.HandleFunc("/history/{id}", handlers.GetHistory).Methods("GET")
 	protected.HandleFunc("/user/{username}", handlers.GetUserByUsername).Methods("GET")
-	// Protected PUT endpoints
 	protected.HandleFunc("/updProfile", handlers.UpdateUserProfile).Methods("PUT")
 	protected.HandleFunc("/updBalance", handlers.UpdateUserBalance).Methods("PUT")
-	// And protected DELETE endpoint...
 	protected.HandleFunc("/user/{id}", handlers.DeleteUserHandler).Methods("DELETE")
+	protected.HandleFunc("/session", handlers.SessionHandler).Methods("GET")
 
-	// WebSocket route for handling game actions like room creation, joining, etc.
 	protected.HandleFunc("/ws", handlers.HandleWebSocket)
 
-	// HTTP server setup
 	server := &http.Server{
 		Addr:         ":3000",
-		Handler:      router,
+		Handler:      corsHandler.Handler(router), // 🚀 Wrap router with CORS handler
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	// Start HTTP server in a goroutine
 	go func() {
 		log.Println("HTTP Server is running on http://localhost:3000")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -64,14 +63,11 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown handling for the HTTP server
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
 
 	log.Println("Shutting down server...")
-
-	// Graceful shutdown with timeout for HTTP server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

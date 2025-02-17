@@ -15,7 +15,7 @@ type User struct {
 	Username  string    `json:"username"`   // Username
 	Password  string    `json:"-"`          // Hashed password (not exposed in JSON)
 	CreatedAt time.Time `json:"created_at"` // Account creation timestamp
-	Balance   int       `json:"balance"`
+	Balance   int       `json:"balance"`    // User Balance
 }
 
 func GetUserByUsername(db *sql.DB, username string) (*User, error) {

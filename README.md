@@ -1,3 +1,5 @@
+<img src="./docs/logo.png" alt="Logo" width=200> 
+
 # Dueljack
 
 Dueljack is an online multiplayer card game built using **Go** with **PostgreSQL** for data storage, **Redis** for managing game sessions, and **WebSockets** for real-time player interactions.

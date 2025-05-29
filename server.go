@@ -7,7 +7,7 @@ import (
 	"blackjack/src/middlewares"
 	"context"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors" // 🚀 Import CORS package
+	"github.com/rs/cors"
 	"log"
 	"net/http"
 	"os"
@@ -51,7 +51,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:         ":3000",
-		Handler:      corsHandler.Handler(router), // 🚀 Wrap router with CORS handler
+		Handler:      corsHandler.Handler(router),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

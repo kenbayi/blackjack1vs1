@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package events_svc;
+
+option go_package = "email_svc/internal/adapter/proto/events";
+
+import "google/protobuf/timestamp.proto";
+message EmailSendRequest {
+  string to = 1;
+  string subject = 2;
+  string body = 3;
+}

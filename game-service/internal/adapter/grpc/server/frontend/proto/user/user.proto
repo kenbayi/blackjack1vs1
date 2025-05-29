@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package user_svc;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "auth-service/internal/adapter/grpc/server/frontend/proto/user";
+
+message User {
+  // user id
+  int64 id = 1;
+  // user full name
+  string username = 2;
+  // email
+  string email = 3;
+  // nickname
+  string nickname = 4;
+  //
+  string role = 5;
+  //
+  int64 balance = 6;
+  //
+  string bio = 7;
+  // created at == registration time for a user
+  google.protobuf.Timestamp created_at = 8;
+  // updated at
+  google.protobuf.Timestamp updated_at = 9;
+  // check user status
+  bool is_deleted = 10;
+  int64 rating = 11;
+}
+
+// Сервис для управления клиентами
+service userService {
+  rpc GetBalance(UserIDRequest) returns (GetBalanceResponse);
+  rpc AddBalance(BalanceUpdateRequest) returns (google.protobuf.Empty);
+  rpc SubtractBalance(BalanceUpdateRequest) returns (google.protobuf.Empty);
+  rpc GetProfile(UserIDRequest) returns (UserProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (google.protobuf.Empty);
+  rpc GetRating(UserIDRequest) returns (GetRatingResponse);
+  rpc UpdateRating(RatingUpdateResponse) returns (google.protobuf.Empty);
+}
+
+message UserIDRequest {
+  int64 id = 1;
+}
+message GetBalanceResponse{
+  int64 balance = 1;
+}
+
+message BalanceUpdateRequest{
+  int64 id = 1;
+  int64 balance = 2;
+}
+
+message UserProfileResponse{
+  User user = 1;
+}
+
+message UpdateProfileRequest{
+  int64 id = 1;
+  string nickname = 2;
+  string bio = 3;
+}
+
+message GetRatingResponse{
+  int64 rating = 1;
+}
+message RatingUpdateResponse{
+  int64 id = 1;
+  int64 rating = 2;
+}

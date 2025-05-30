@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package events_svc;
+
+option go_package = "game_svc/internal/adapter/grpc/server/frontend/proto/events";
+
+import "google/protobuf/timestamp.proto";
+
+message GameResult {
+  string room_id = 1;
+  int64 winner_id = 2;
+  int64 loser_id = 3;
+  int64 bet = 4;
+  google.protobuf.Timestamp created_at = 5;
+  PlayerGameResult player1 = 6;
+  PlayerGameResult player2 = 7;
+}
+
+message PlayerGameResult {
+  int64 player_id = 1;
+  int32 final_score = 2;
+  repeated string final_hand = 3;
+}

@@ -1,0 +1,72 @@
+syntax = "proto3";
+package statistics;
+option go_package = "api-gateway/internal/adapter/grpc/server/frontend/proto/statistics";
+import "google/protobuf/timestamp.proto";
+
+// Service to get game statistics
+service StatisticsService {
+  rpc GetGeneralGameStats(GetGeneralGameStatsRequest) returns (GetGeneralGameStatsResponse);
+  rpc GetUserGameStats(GetUserGameStatsRequest) returns (GetUserGameStatsResponse);
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+}
+
+// --- General Game Stats ---
+message GetGeneralGameStatsRequest {}
+
+message GeneralGameStats {
+  int64 total_users = 1;
+  int64 total_games_played = 2;
+  int64 total_bet_amount = 3;
+  google.protobuf.Timestamp last_updated_at = 4;
+}
+
+message GetGeneralGameStatsResponse {
+  GeneralGameStats stats = 1;
+}
+
+// --- User Game Stats ---
+message GetUserGameStatsRequest {
+  int64 user_id = 1;
+}
+
+message UserGameStats {
+  int64 user_id = 1;
+  int64 games_played = 2;
+  int64 games_won = 3;
+  int64 games_lost = 4;
+  int64 games_drawn = 5;
+  int64 total_bet = 6;
+  int64 total_winnings = 7;
+  int64 total_losses = 8;
+  double win_rate = 9;   // float64 maps to double
+  double loss_rate = 10;  // float64 maps to double
+  int64 win_streak = 11;
+  int64 loss_streak = 12;
+  google.protobuf.Timestamp last_game_played_at = 13;
+}
+
+message GetUserGameStatsResponse {
+  UserGameStats stats = 1;
+}
+
+// --- Leaderboard ---
+message GetLeaderboardRequest {
+  string leaderboard_type = 1;
+  int32 limit = 2;
+}
+
+message LeaderboardEntry {
+  int64 user_id = 1;
+  string username = 2; // Optional
+  int64 score = 3;
+  int32 rank = 4;
+}
+
+message Leaderboard {
+  string type = 1;
+  repeated LeaderboardEntry entries = 2;
+}
+
+message GetLeaderboardResponse {
+  Leaderboard leaderboard = 1;
+}

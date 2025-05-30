@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package auth_svc;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "auth-service/internal/adapter/grpc/server/frontend/proto/auth";
+
+message User {
+  // user id
+  int64 id = 1;
+  // user full name
+  string username = 2;
+  // email
+  string email = 3;
+  //
+  string role = 4;
+  // created at == registration time for a user
+  google.protobuf.Timestamp created_at = 5;
+  // updated at
+  google.protobuf.Timestamp updated_at = 6;
+  // check user status
+  bool is_deleted = 7;
+}
+
+// Сервис для управления клиентами
+service userService {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc DeleteByID (google.protobuf.Empty) returns (DeleteByIDResponse);
+  rpc UpdateUsername(UpdateUsernameRequest) returns (UpdateUsernameResponse);
+  rpc UpdateEmailRequest(UpdateEmailReq) returns (google.protobuf.Empty);
+  rpc ConfirmEmailChange(EmailChangeReq) returns (google.protobuf.Empty);
+  rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty);
+  rpc RequestPasswordReset(PasswordResetReq) returns (google.protobuf.Empty);
+  rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  int64 id = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message DeleteByIDResponse {
+  int64 id = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message UpdateUsernameRequest {
+  string username = 1;
+}
+
+message UpdateUsernameResponse {
+  int64 id = 1;
+  string username = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message UpdateEmailReq{
+  string email = 1;
+}
+
+message EmailChangeReq{
+  string token = 1;
+}
+
+message ChangePasswordRequest{
+  int64 id = 1;
+  string current_password = 2;
+  string new_password = 3;
+}
+
+message PasswordResetReq{
+  string email = 1;
+}
+
+message ResetPasswordRequest{
+  string token = 1;
+  string new_password = 3;
+}

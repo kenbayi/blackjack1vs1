@@ -1,0 +1,218 @@
+Index: user-service/pkg/postgres/options.go
+===================================================================
+diff --git a/user-service/pkg/postgres/options.go b/user-service/pkg/postgres/options.go
+deleted file mode 100644
+--- a/user-service/pkg/postgres/options.go	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
++++ /dev/null	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
+@@ -1,17 +0,0 @@
+-package postgres
+-
+-import "fmt"
+-
+-func (m Config) genConnectURL() string {
+-	auth := m.Username
+-	if m.Password != "" {
+-		auth = fmt.Sprintf("%s:%s", m.Username, m.Password)
+-	}
+-
+-	return fmt.Sprintf("postgres://%s@%s:%s/%s?sslmode=%s",
+-		auth,
+-		m.Host,
+-		m.Port,
+-		m.Database,
+-		m.SSLMode)
+-}
+Index: user-service/pkg/postgres/postgres.go
+===================================================================
+diff --git a/user-service/pkg/postgres/postgres.go b/user-service/pkg/postgres/postgres.go
+deleted file mode 100644
+--- a/user-service/pkg/postgres/postgres.go	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
++++ /dev/null	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
+@@ -1,96 +0,0 @@
+-package postgres
+-
+-import (
+-	"context"
+-	"database/sql"
+-	"fmt"
+-	"log"
+-	"time"
+-
+-	_ "github.com/lib/pq"
+-)
+-
+-type Config struct {
+-	Host         string `env:"POSTGRES_HOST" envDefault:"localhost"`
+-	Port         string `env:"POSTGRES_PORT" envDefault:"5432"`
+-	Database     string `env:"POSTGRES_DB" envDefault:"user_service_db"`
+-	Username     string `env:"POSTGRES_USER" envDefault:"postgres"`
+-	Password     string `env:"POSTGRES_PASSWORD" envDefault:""`
+-	SSLMode      string `env:"POSTGRES_SSL_MODE" envDefault:"disable"`
+-	MaxOpenConns int    `env:"POSTGRES_MAX_OPEN_CONNS" envDefault:"10"`
+-	MaxIdleConns int    `env:"POSTGRES_MAX_IDLE_CONNS" envDefault:"5"`
+-}
+-
+-type DB struct {
+-	Conn   *sql.DB
+-	client *sql.DB
+-}
+-
+-// NewDB creates connection to PostgreSQL and returns the DB struct.
+-func NewDB(ctx context.Context, cfg Config) (*DB, error) {
+-	connStr := cfg.genConnectURL()
+-
+-	db, err := sql.Open("postgres", connStr)
+-	if err != nil {
+-		return nil, fmt.Errorf("connection to PostgreSQL Error: %w", err)
+-	}
+-
+-	// Configure connection pool
+-	db.SetMaxOpenConns(cfg.MaxOpenConns)
+-	db.SetMaxIdleConns(cfg.MaxIdleConns)
+-	db.SetConnMaxLifetime(time.Minute * 5)
+-
+-	// Verify connection
+-	err = db.PingContext(ctx)
+-	if err != nil {
+-		return nil, fmt.Errorf("ping connection PostgreSQL Error: %w", err)
+-	}
+-
+-	pgDB := &DB{
+-		Conn:   db,
+-		client: db,
+-	}
+-
+-	go pgDB.reconnectOnFailure(ctx)
+-
+-	return pgDB, nil
+-}
+-
+-// reconnectOnFailure implements db reconnection if ping was unsuccessful.
+-func (db *DB) reconnectOnFailure(ctx context.Context) {
+-	ticker := time.NewTicker(time.Minute)
+-
+-	for {
+-		select {
+-		case <-ticker.C:
+-			err := db.client.PingContext(ctx)
+-			if err != nil {
+-				log.Printf("lost connection to PostgreSQL: %v", err)
+-
+-				// Attempt to reconnect
+-				err = db.client.PingContext(ctx)
+-				if err == nil {
+-					log.Println("reconnected to PostgreSQL successfully")
+-				}
+-			}
+-		case <-ctx.Done():
+-			ticker.Stop()
+-			err := db.client.Close()
+-			if err != nil {
+-				log.Printf("PostgreSQL close connection error: %v", err)
+-				return
+-			}
+-
+-			log.Println("PostgreSQL connection is closed successfully")
+-			return
+-		}
+-	}
+-}
+-
+-func (db *DB) Ping(ctx context.Context) error {
+-	err := db.client.PingContext(ctx)
+-	if err != nil {
+-		return fmt.Errorf("PostgreSQL connection error: %w", err)
+-	}
+-	return nil
+-}
+Index: user-service/pkg/postgres/transactor.go
+===================================================================
+diff --git a/user-service/pkg/postgres/transactor.go b/user-service/pkg/postgres/transactor.go
+deleted file mode 100644
+--- a/user-service/pkg/postgres/transactor.go	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
++++ /dev/null	(revision 39f5d5c1beebb445bf058862357745a28848bc14)
+@@ -1,56 +0,0 @@
+-package postgres
+-
+-import (
+-	"context"
+-	"database/sql"
+-	"fmt"
+-)
+-
+-type Transactor struct {
+-	db *sql.DB
+-}
+-
+-func NewTransactor(db *sql.DB) *Transactor {
+-	return &Transactor{
+-		db: db,
+-	}
+-}
+-
+-// WithinTransaction wraps the callback function in a PostgreSQL transaction
+-func (t *Transactor) WithinTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+-	tx, err := t.db.BeginTx(ctx, nil)
+-	if err != nil {
+-		return fmt.Errorf("BeginTx: %w", err)
+-	}
+-
+-	defer func() {
+-		if p := recover(); p != nil {
+-			_ = tx.Rollback()
+-			panic(p)
+-		}
+-	}()
+-
+-	// Кладём tx в новый контекст
+-	txCtx := context.WithValue(ctx, txKey{}, tx)
+-
+-	err = fn(txCtx) // передаём уже txCtx
+-	if err != nil {
+-		if rbErr := tx.Rollback(); rbErr != nil {
+-			return fmt.Errorf("rollback error: %v (original error: %w)", rbErr, err)
+-		}
+-		return err
+-	}
+-
+-	if err := tx.Commit(); err != nil {
+-		return fmt.Errorf("commit error: %w", err)
+-	}
+-
+-	return nil
+-}
+-
+-type txKey struct{}
+-
+-func TxFromCtx(ctx context.Context) (*sql.Tx, bool) {
+-	tx, ok := ctx.Value(txKey{}).(*sql.Tx)
+-	return tx, ok
+-}
+Index: statistics-service/cmd/statistics/.env
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/statistics-service/cmd/statistics/.env b/statistics-service/cmd/statistics/.env
+new file mode 100644
+--- /dev/null	(date 1748524205198)
++++ b/statistics-service/cmd/statistics/.env	(date 1748524205198)
+@@ -0,0 +1,2 @@
++JWT_MANAGER_SECRET_KEY=8hX1OVimgwemvjWR8EDouq2t/XVCV/9boxwNKuigM8U=
++NATS_NKEY=UAR3X3A2GSLZMNNG7PSBWOSZRUI2K4VLNJJ545NMYIB3OJP4DI5VG4VP
+\ No newline at end of file
+Index: game-service/cmd/.env
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/game-service/cmd/.env b/game-service/cmd/.env
+new file mode 100644
+--- /dev/null	(date 1748524541095)
++++ b/game-service/cmd/.env	(date 1748524541095)
+@@ -0,0 +1,4 @@
++JWT_MANAGER_SECRET_KEY=8hX1OVimgwemvjWR8EDouq2t/XVCV/9boxwNKuigM8U=
++NATS_GAME_RESULT_SUBJECT=game.events.result
++GRPC_USER_SERVICE_URL=0.0.0.0:8082
++NATS_NKEY=UAR3X3A2GSLZMNNG7PSBWOSZRUI2K4VLNJJ545NMYIB3OJP4DI5VG4VP
+\ No newline at end of file

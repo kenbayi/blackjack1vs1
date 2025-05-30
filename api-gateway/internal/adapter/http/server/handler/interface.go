@@ -3,6 +3,7 @@ package handler
 import (
 	"api-gateway/internal/model"
 	"context"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserUsecase interface {
@@ -16,4 +17,20 @@ type UserUsecase interface {
 	ChangePassword(ctx context.Context, user model.User) error
 	RequestPasswordReset(ctx context.Context, user model.User) error
 	ResetPassword(ctx context.Context, req model.RequestToChange) error
+}
+
+type UserProfileUsecase interface {
+	GetBalance(ctx context.Context, user model.UserProfile) (model.UserProfile, error)
+	AddBalance(ctx context.Context, user model.UserProfile) (*emptypb.Empty, error)
+	SubtractBalance(ctx context.Context, user model.UserProfile) (*emptypb.Empty, error)
+	GetProfile(ctx context.Context, user model.UserProfile) (model.UserProfile, error)
+	UpdateProfile(ctx context.Context, user model.UserProfile) (*emptypb.Empty, error)
+	GetRating(ctx context.Context, user model.UserProfile) (model.UserProfile, error)
+	UpdateRating(ctx context.Context, user model.UserProfile) (*emptypb.Empty, error)
+}
+
+type StatisticsUsecase interface {
+	GetGeneralGameStats(ctx context.Context) (*model.GeneralGameStats, error)
+	GetUserGameStats(ctx context.Context, userID int64) (*model.UserGameStats, error)
+	GetLeaderboard(ctx context.Context, req model.Leaderboard) (*model.Leaderboard, error)
 }

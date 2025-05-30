@@ -58,12 +58,12 @@ func (r *UserRepository) PatchByID(ctx context.Context, userUpdated *model.UserU
 	argID := 1
 	setClauses := []string{}
 
-	if userUpdated.Username != nil {
+	if userUpdated.Username != nil && *userUpdated.Username != "" {
 		setClauses = append(setClauses, fmt.Sprintf("username = $%d", argID))
 		args = append(args, *userUpdated.Username)
 		argID++
 	}
-	if userUpdated.Nickname != nil {
+	if userUpdated.Nickname != nil && *userUpdated.Nickname != "" {
 		setClauses = append(setClauses, fmt.Sprintf("nickname = $%d", argID))
 		args = append(args, *userUpdated.Nickname)
 		argID++
@@ -73,7 +73,7 @@ func (r *UserRepository) PatchByID(ctx context.Context, userUpdated *model.UserU
 		args = append(args, *userUpdated.Rating)
 		argID++
 	}
-	if userUpdated.Bio != nil {
+	if userUpdated.Bio != nil && *userUpdated.Bio != "" {
 		setClauses = append(setClauses, fmt.Sprintf("bio = $%d", argID))
 		args = append(args, *userUpdated.Bio)
 		argID++
@@ -121,8 +121,8 @@ func (r *UserRepository) GetWithFilter(ctx context.Context, filter model.UserFil
 	whereClause, args := dao.FromUserFilter(filter)
 	query := `
 		SELECT 
-			id, username, email,
-			created_at, updated_at, is_deleted
+			id, username, nickname, role, bio, email,
+			created_at, updated_at, is_deleted, rating, balance
 		FROM users
 	` + whereClause
 
@@ -130,10 +130,15 @@ func (r *UserRepository) GetWithFilter(ctx context.Context, filter model.UserFil
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
 		&customerDAO.ID,
 		&customerDAO.Username,
+		&customerDAO.Nickname,
+		&customerDAO.Role,
+		&customerDAO.Bio,
 		&customerDAO.Email,
 		&customerDAO.CreatedAt,
 		&customerDAO.UpdatedAt,
 		&customerDAO.IsDeleted,
+		&customerDAO.Rating,
+		&customerDAO.Balance,
 	)
 
 	if err != nil {
@@ -150,8 +155,8 @@ func (r *UserRepository) GetListWithFilter(ctx context.Context, filter model.Use
 	whereClause, args := dao.FromUserFilter(filter)
 	query := `
 		SELECT 
-			id, username, email,
-			created_at, updated_at, is_deleted
+			id, username, nickname, role, bio, email,
+			created_at, updated_at, is_deleted, rating, balance
 		FROM users
 	` + whereClause
 
@@ -167,10 +172,15 @@ func (r *UserRepository) GetListWithFilter(ctx context.Context, filter model.Use
 		err := rows.Scan(
 			&customerDAO.ID,
 			&customerDAO.Username,
+			&customerDAO.Nickname,
+			&customerDAO.Role,
+			&customerDAO.Bio,
 			&customerDAO.Email,
 			&customerDAO.CreatedAt,
 			&customerDAO.UpdatedAt,
 			&customerDAO.IsDeleted,
+			&customerDAO.Rating,
+			&customerDAO.Balance,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan customer: %w", err)

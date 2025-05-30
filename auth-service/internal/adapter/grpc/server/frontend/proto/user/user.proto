@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package user_svc;
+package auth_svc;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "auth-service/internal/adapter/grpc/server/frontend/proto/user";
+option go_package = "auth-service/internal/adapter/grpc/server/frontend/proto/auth";
 
 message User {
   // user id

@@ -3,6 +3,7 @@ package usecase
 import (
 	"api-gateway/internal/model"
 	"context"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserPresenter interface {
@@ -16,4 +17,20 @@ type UserPresenter interface {
 	ChangePassword(ctx context.Context, user model.User) error
 	RequestPasswordReset(ctx context.Context, user model.User) error
 	ResetPassword(ctx context.Context, req model.RequestToChange) error
+}
+
+type StatisticsPresenter interface {
+	GetGeneralGameStats(ctx context.Context) (*model.GeneralGameStats, error)
+	GetUserGameStats(ctx context.Context, userID int64) (*model.UserGameStats, error)
+	GetLeaderboard(ctx context.Context, req model.Leaderboard) (*model.Leaderboard, error)
+}
+
+type UserProfilePresenter interface {
+	GetBalance(ctx context.Context, request model.UserProfile) (model.UserProfile, error)
+	AddBalance(ctx context.Context, request model.UserProfile) (*emptypb.Empty, error)
+	SubtractBalance(ctx context.Context, request model.UserProfile) (*emptypb.Empty, error)
+	GetProfile(ctx context.Context, request model.UserProfile) (model.UserProfile, error)
+	UpdateProfile(ctx context.Context, request model.UserProfile) (*emptypb.Empty, error)
+	GetRating(ctx context.Context, request model.UserProfile) (model.UserProfile, error)
+	UpdateRating(ctx context.Context, request model.UserProfile) (*emptypb.Empty, error)
 }

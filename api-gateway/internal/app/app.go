@@ -11,7 +11,11 @@ import (
 
 	"api-gateway/config"
 	authsvc "api-gateway/internal/adapter/frontend/proto/auth"
+	statisticsvc "api-gateway/internal/adapter/frontend/proto/statistics"
+	usersvc "api-gateway/internal/adapter/frontend/proto/user"
 	grpcauthsvcclient "api-gateway/internal/adapter/grpc/auth"
+	grpcstatisticssvcclient "api-gateway/internal/adapter/grpc/statistics"
+	grpcusersvcclient "api-gateway/internal/adapter/grpc/user"
 	httpserver "api-gateway/internal/adapter/http/server"
 	"api-gateway/pkg/grpcconn"
 )
@@ -30,12 +34,28 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 
+	userServiceGRPCConn, err := grpcconn.New(cfg.GRPC.GRPCClient.UserServiceURL)
+	if err != nil {
+		return nil, err
+	}
+
+	statsServiceGRPCConn, err := grpcconn.New(cfg.GRPC.GRPCClient.StatisticsServiceURL)
+	if err != nil {
+		return nil, err
+	}
+
 	authServiceClient := grpcauthsvcclient.NewAuth(authsvc.NewUserServiceClient(authServiceGRPCConn))
+	userServiceClient := grpcusersvcclient.NewUser(usersvc.NewUserServiceClient(userServiceGRPCConn))
+	statisticServiceClient := grpcstatisticssvcclient.NewStatistics(
+		statisticsvc.NewStatisticsServiceClient(statsServiceGRPCConn),
+	)
 
 	authUsecase := usecase.NewUser(authServiceClient)
+	inventoryUsecase := usecase.NewUserProfile(userServiceClient)
+	statisticUsecase := usecase.NewStatistics(statisticServiceClient)
 
 	// http service
-	httpServer := httpserver.New(cfg.Server, authUsecase)
+	httpServer := httpserver.New(cfg.Server, authUsecase, statisticUsecase, inventoryUsecase)
 
 	app := &App{
 		httpServer: httpServer,

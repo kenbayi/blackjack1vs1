@@ -20,14 +20,16 @@ import (
 const serverIPAddress = "0.0.0.0:%d" // Changed to 0.0.0.0 for external access
 
 type API struct {
-	server      *gin.Engine
-	cfg         config.HTTPServer
-	jwt         config.JWTManager
-	addr        string
-	authHandler *handler.User
+	server           *gin.Engine
+	cfg              config.HTTPServer
+	jwt              config.JWTManager
+	addr             string
+	authHandler      *handler.User
+	userHandler      *handler.UserProfile
+	statisticHandler *handler.Statistics
 }
 
-func New(cfg config.Server, auth UserUsecase) *API {
+func New(cfg config.Server, auth UserUsecase, statistic StatisticsUsecase, user UserProfileUsecase) *API {
 	// Setting the Gin mode
 	gin.SetMode(cfg.HTTPServer.Mode)
 	// Creating a new Gin Engine
@@ -38,13 +40,17 @@ func New(cfg config.Server, auth UserUsecase) *API {
 
 	// Binding presenter
 	authHandler := handler.NewUser(auth)
+	userHandler := handler.NewUserProfile(user)
+	statisticHandler := handler.NewStatistics(statistic)
 
 	api := &API{
-		server:      server,
-		cfg:         cfg.HTTPServer,
-		jwt:         cfg.JWTManager,
-		addr:        fmt.Sprintf(serverIPAddress, cfg.HTTPServer.Port),
-		authHandler: authHandler,
+		server:           server,
+		cfg:              cfg.HTTPServer,
+		jwt:              cfg.JWTManager,
+		addr:             fmt.Sprintf(serverIPAddress, cfg.HTTPServer.Port),
+		authHandler:      authHandler,
+		userHandler:      userHandler,
+		statisticHandler: statisticHandler,
 	}
 
 	api.setupRoutes()
@@ -77,6 +83,24 @@ func (a *API) setupRoutes() {
 			userMeGroup.PATCH("/username", a.authHandler.UpdateUsername)
 			userMeGroup.POST("/password", a.authHandler.ChangePassword)
 			userMeGroup.POST("/email-change/request", a.authHandler.UpdateEmailRequest)
+		}
+
+		// These are handled by userHandler (*handler.UserProfile).
+		usersGroup := v1.Group("/users")
+		{
+			usersGroup.GET("/profile", a.userHandler.GetProfile)
+			usersGroup.PATCH("/profile", a.userHandler.UpdateProfile)
+			usersGroup.GET("/balance", a.userHandler.GetBalance)
+			usersGroup.GET("/rating", a.userHandler.GetRating)
+		}
+
+		// Routes for game statistics
+		// These are handled by statisticHandler (*handler.Statistics).
+		statisticsGroup := v1.Group("/statistics")
+		{
+			statisticsGroup.GET("/general", a.statisticHandler.GetGeneralGameStats)
+			statisticsGroup.GET("/user/:userID", a.statisticHandler.GetUserGameStats)
+			statisticsGroup.GET("/leaderboard", a.statisticHandler.GetLeaderboard)
 		}
 	}
 }

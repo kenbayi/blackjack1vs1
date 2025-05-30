@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2ef83dad-0015-4a57-b55b-3fecdaf84155" name="Changes" comment="game service done">
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/statistics/statistics.pb.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/statistics/statistics.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/statistics/statistics_grpc.pb.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/user/service.pb.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/user/service.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/frontend/proto/user/service_grpc.pb.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/grpc/statistics/dto/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/grpc/statistics/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/grpc/user/dto/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/grpc/user/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/dto/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/dto/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/model/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/model/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/usecase/statistics.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/internal/usecase/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/game-service/cmd/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/statistics-service/cmd/statistics/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/interface.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/interface.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/internal/usecase/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/internal/usecase/interface.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/internal/adapter/grpc/server/frontend/proto/user/user.proto" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/internal/adapter/grpc/server/frontend/proto/user/user.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/internal/adapter/grpc/server/frontend/proto/user/user.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/internal/adapter/grpc/server/frontend/proto/user/user.pb.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/internal/adapter/grpc/server/frontend/proto/user/user.proto" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/internal/adapter/grpc/server/frontend/proto/user/user.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/internal/adapter/postgres/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/internal/adapter/postgres/user.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///opt/homebrew/opt/go/libexec" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="production" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;kenbayi&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/kenbayi/blackjack1vs1.git&quot;,
+    &quot;accountId&quot;: &quot;4e7b7771-ea3f-4175-b2b3-1abe4714e98c&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2sAIplVnhTwRqyD73UMCRdqw2Pp" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "development",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/ilyaskenbay/blackjack1vs1/user-service/pkg",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/user-service/pkg" />
+      <recent name="$PROJECT_DIR$/api-gateway/internal/usecase" />
+      <recent name="$PROJECT_DIR$/api-gateway/internal/model" />
+      <recent name="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler/dto" />
+      <recent name="$PROJECT_DIR$/api-gateway/internal/adapter/http/server/handler" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-d297c17c1fbd-b87a2f8923ed-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-243.21565.208" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-GO-243.21565.208" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added dependency (gorilla/mux)." />
+    <MESSAGE value="Logout logic and middleware logic to secure routes. Handlers handled/implemented in server.go" />
+    <MESSAGE value="websocket initialization, and future structure for other handlers with room manipulation." />
+    <MESSAGE value="join room logic." />
+    <MESSAGE value="shuffle the deck, card deal, game start logics." />
+    <MESSAGE value="change name in User struct" />
+    <MESSAGE value="adjusted leaveRoom functionality so can be reused." />
+    <MESSAGE value="added calculateScore and featured some cases" />
+    <MESSAGE value="GetRooms and DeleteUser endpoints added, with functions and slight changed logic of hub instance as global var." />
+    <MESSAGE value="Fixed logic game end" />
+    <MESSAGE value="little changes to be worked with frontend" />
+    <MESSAGE value="Session handler (forgot)" />
+    <MESSAGE value="user-service done" />
+    <MESSAGE value="statistics service done" />
+    <MESSAGE value="game service done" />
+    <option name="LAST_COMMIT_MESSAGE" value="game service done" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>
